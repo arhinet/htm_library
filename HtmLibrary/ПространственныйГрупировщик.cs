@@ -14,6 +14,12 @@ namespace HtmLibrary
         /// </summary>
         public const int DesiredLocalActivity = 10;
 
+        /// <summary>
+        /// Если значение перманентности синапса больше данного
+        /// параметра, то он считается подключенным (действующим).
+        /// </summary>
+        public const double ConnectedPerm = 0.2;
+
         private Region _region;
 
         /// <summary>
@@ -32,7 +38,7 @@ namespace HtmLibrary
         /// фактор ускорения («агрессивности») колонки. Если полученное число будет
         /// меньше minOverlap, то мы устанавливаем значение перекрытия в ноль.
         /// </remarks>
-        public void DoOverlap()
+        public void Перекрытие()
         {
             foreach (Column column in _region.Columns)
             {
@@ -76,18 +82,6 @@ namespace HtmLibrary
         /// На третьей фазе происходит обучение. Здесь обновляются значения
         /// перманентности всех синапсов, если это необходимо, равно как и фактор
         /// ускорения («агрессивности») колонки вместе с ее радиусом подавления.
-        /// Основное правило обучения имплементировано в строках 20-26. Для победивших
-        /// колонок, если их синапс был активен, его значение перманентности
-        /// увеличивается, а иначе – уменьшается. Значения перманентности ограничены
-        /// промежутком от 0.0 до 1.0 .
-        /// В строках 28- 36 имплементирован механизм ускорения. Имеется два различных
-        /// механизма ускорения помогающих колонке обучать свои соединения (связи). Если
-        /// колонка не побеждает достаточно долго (что измеряется в activeDutyCycle), то
-        /// увеличивается ее общий фактор ускорения (строки 30-32). Альтернативно, если
-        /// подключенные синапсы колонки плохо перекрываются с любыми входными
-        /// данными достаточно долго (что измеряется в overlapDutyCycle), увеличиваются
-        /// их значения перманентности (строки 34-36). Обратите внимание: если обучение
-        /// выключено, то boost(c) замораживается.
         /// </remarks>
         public void Обучение()
         {
@@ -95,6 +89,10 @@ namespace HtmLibrary
             // были увеличены при обучении.
             double permanenceInc = 0;
 
+            // Имплементировано основное правило обучения. Для победивших
+            // колонок, если их синапс был активен, его значение перманентности
+            // увеличивается, а иначе – уменьшается. Значения перманентности ограничены
+            // промежутком от 0.0 до 1.0 .
             foreach (Column column in _region.ActiveColumns(0))
             {
                 foreach (Synapse potentialSynapse in column.PotentialSynapses)
@@ -113,20 +111,26 @@ namespace HtmLibrary
             }
 
 
+            // В строках имплементирован механизм ускорения. Имеется два различных
+            // механизма ускорения помогающих колонке обучать свои соединения (связи). 
+            // Обратите внимание: если обучение
+            // выключено, то boost(c) замораживается.
             foreach (Column column in _region.Columns)
             {
-                //30. minDutyCycle(c) = 0.01 * maxDutyCycle(neighbors(c))
-                //31. activeDutyCycle(c) = updateActiveDutyCycle(c)
-                //32. boost(c) = boostFunction(activeDutyCycle(c), minDutyCycle(c))
-                //33.
-                //34. overlapDutyCycle(c) = updateOverlapDutyCycle(c)
-                //35. if overlapDutyCycle(c) < minDutyCycle(c) then
-                //36. increasePermanences(c, 0.1*connectedPerm)
+                // Если колонка не побеждает достаточно долго (что измеряется в activeDutyCycle), то
+                // увеличивается ее общий фактор ускорения. 
+                column.MinDutyCycle = 0.01 * column.MaxDutyCycle;
+                column.UpdateActiveDutyCycle();
+                column.Boost = column.BoostFunction(column.ActiveDutyCycle, column.MinDutyCycle);
+
+                // Альтернативно, если подключенные синапсы колонки плохо перекрываются с любыми входными
+                // данными достаточно долго (что измеряется в overlapDutyCycle), увеличиваются их значения перманентности. 
+                column.OverlapDutyCycle = column.UpdateOverlapDutyCycle;
+                if (column.OverlapDutyCycle < column.MinDutyCycle)
+                    column.IncreasePermanences(0.1 * ConnectedPerm);
             }
 
-
             _inhibitionRadius = AverageReceptiveFieldSize();
-
         }
 
         #region Статические функции

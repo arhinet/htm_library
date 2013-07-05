@@ -22,6 +22,30 @@
         /// </summary>
         public double Boost { get; set; }
 
+
+        /// <summary>
+        /// minDutyCycle(c) Переменная представляющая минимальную желательную
+        /// частоту активации (firing) для клетки. Если эта частота клетки
+        /// упадет ниже данного значения, то она будет ускорена
+        /// (boosted). Это значение определяется как 1% от
+        /// максимальной частоты активации соседей клетки.
+        /// </summary>
+        public double MinDutyCycle { get; set; }
+
+
+        /// <summary>
+        /// Возвращает максимальное число циклов активности для всех соседних колонок.
+        /// </summary>
+        public double MaxDutyCycle
+        {
+            get
+            {
+                //Neighbors
+                return 0;
+            }
+        }
+        
+
         /// <summary>
         /// Первая фаза вычисляет значение перекрытия каждой колонки для текущего
         /// входного вектора (данными). Перекрытие для каждой колонки это просто число
@@ -91,6 +115,83 @@
                 return null;
             }
         }
-        
+
+        /// <summary>
+        /// Интервальное среднее показывающее как часто колонка c
+        /// была активна после подавления (то есть за последние 1000
+        /// итераций)
+        /// </summary>
+        public int ActiveDutyCycle
+        {
+            get
+            {
+                throw new System.NotImplementedException();
+            }
+            set
+            {
+                throw new System.NotImplementedException();
+            }
+        }
+
+
+        /// <summary>
+        /// Интервальное среднее показывающее как часто колонка c
+        /// имела существенное значение перекрытия (т.е. большее чем  minOverlap) со своим входом (то есть за последние 1000 итераций).
+        /// </summary>
+        public int OverlapDutyCycle
+        {
+            get
+            {
+                throw new System.NotImplementedException();
+            }
+            set
+            {
+                throw new System.NotImplementedException();
+            }
+        }
+
+
+        /// <summary>
+        /// Вычисляет интервальное среднее того, как часто колонка c имела
+        /// значение перекрытия со входом большее, чем minOverlap.
+        /// </summary>
+        public int UpdateOverlapDutyCycle
+        {
+            get
+            {
+                throw new System.NotImplementedException();
+            }
+            set
+            {
+                throw new System.NotImplementedException();
+            }
+        }
+
+        /// <summary>
+        /// Вычисляет интервальное среднее того, как часто колонка c была активной
+        /// после подавления.
+        /// </summary>
+        public void UpdateActiveDutyCycle()
+        {
+            //ActiveDutyCycle = updateActiveDutyCycle(c)
+        }
+
+
+        /// <summary>
+        /// Возвращает значение ускорения колонки c. Это вещественное значение
+        /// >= 1. Если activeDutyCyle(c) больше minDutyCycle(c), то значение
+        /// ускорения = 1. Ускорение начинает линейно увеличиваться как только
+        /// activeDutyCyle колонки падает ниже minDutyCycle.
+        /// </summary>
+        /// <returns></returns>
+        public double BoostFunction(int a, double b)
+        {
+            return 0;
+        }
+
+        public void IncreasePermanences(double d)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }
